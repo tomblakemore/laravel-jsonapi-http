@@ -3,8 +3,9 @@
 namespace JsonApiHttp\Relationships;
 
 use Illuminate\Support\Arr;
+
+use JsonApiHttp\Model;
 use JsonApiHttp\Relation;
-use JsonApiHttp\Relationships\Relationship;
 
 class BelongsTo extends Relationship
 {
@@ -13,24 +14,32 @@ class BelongsTo extends Relationship
      */
     public function __construct($items = [])
     {
-        parent::__construct($items);
+        if ($items instanceof Model) {
+            $this->relations()->push((new Relation($items)));
+        }
 
-        if (($relation = array_get($items, 'data'))) {
+        else {
 
-            if (Arr::isAssoc($relation)) {
+            if (($relation = array_get($items, 'data'))) {
 
-                $id = array_get($relation, 'id');
-                $type = array_get($relation, 'type');
+                if (Arr::isAssoc($relation)) {
 
-                if ($id && $type) {
-                    $this->relations()->push(
-                        new Relation([
-                            'id' => $id,
-                            'type' => $type
-                        ])
-                    );
+                    $id = array_get($relation, 'id');
+                    $type = array_get($relation, 'type');
+
+                    if ($id && $type) {
+
+                        $this->relations()->push(
+                            new Relation([
+                                'id' => $id,
+                                'type' => $type
+                            ])
+                        );
+                    }
                 }
             }
+
+            parent::__construct($items);
         }
     }
 

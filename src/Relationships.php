@@ -3,7 +3,8 @@
 namespace JsonApiHttp;
 
 use Illuminate\Support\Collection;
-use JsonApiHttp\Contracts\Relationship;
+
+use JsonApiHttp\Contracts\RelationshipInterface;
 
 class Relationships extends Collection
 {
@@ -11,10 +12,10 @@ class Relationships extends Collection
      * Add a new relationship item to the collection.
      *
      * @param string $name
-     * @param \JsonApiHttp\Contracts\Relationship $relationship
+     * @param \JsonApiHttp\Contracts\RelationshipInterface $relationship
      * @return $this
      */
-    public function add($name, Relationship $relationship)
+    public function add($name, RelationshipInterface $relationship)
     {
         if (!$this->has($name)) {
             $this->put($name, $relationship);
@@ -31,7 +32,6 @@ class Relationships extends Collection
         $serialized = parent::jsonSerialize();
 
         foreach ($serialized as $key => $value) {
-
             if (empty($value)) {
                 array_forget($serialized, $key);
             }

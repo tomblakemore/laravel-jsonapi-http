@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Arr;
-use JsonApiHttp\Model;
-use JsonApiHttp\Payload;
+
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
+
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Request extends HttpRequest
@@ -611,7 +611,7 @@ class Request extends HttpRequest
      * Get the model bound to the route or contruct from payload.
      *
      * @return \JsonApiHttp\Model
-     * @throws \Exception
+     * @throws \JsonApiHttp\Exceptions\ModelException
      */
     public function model()
     {
@@ -631,7 +631,7 @@ class Request extends HttpRequest
             }
 
             if ($this->model && !($this->model instanceof Model)) {
-                throw new \Exception('Invalid model');
+                throw new ModelException('Invalid model');
             }
         }
 

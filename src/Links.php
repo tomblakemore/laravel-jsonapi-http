@@ -3,7 +3,6 @@
 namespace JsonApiHttp;
 
 use Illuminate\Support\Collection;
-use JsonApiHttp\Link;
 
 class Links extends Collection
 {

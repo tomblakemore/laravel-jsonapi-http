@@ -3,11 +3,12 @@
 namespace JsonApiHttp\Relationships;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Pagination\LengthAwarePaginator as Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+
 use JsonApiHttp\Relation;
-use JsonApiHttp\Relationships\Relationship;
+use JsonApiHttp\Relations;
 
 class HasMany extends Relationship
 {
@@ -17,6 +18,14 @@ class HasMany extends Relationship
      * @var int
      */
     const DEFAULT_PER_PAGE = 15;
+
+    /**
+     * A paginated set of relations or models.
+     *
+     * @access protected
+     * @var \Illuminate\Pagination\LengthAwarePaginator
+     */
+    protected $paginator;
 
     /**
      * Show pagination in meta.
@@ -31,11 +40,20 @@ class HasMany extends Relationship
      */
     public function __construct($items = [])
     {
-        if ($items instanceof Collection || $items instanceof Paginator) {
+        if ($items instanceof Collection) {
 
-            foreach ($items as $relation) {
-                $this->relations()->push((new Relation($relation)));
+            foreach ($items as $item) {
+
+                if ($item instanceof Relation) {
+                    $this->relations()->push($item);
+                } else {
+                    $this->relations()->push((new Relation($item)));
+                }
             }
+        }
+
+        elseif ($items instanceof LengthAwarePaginator) {
+            $this->setPaginator($items);
         }
 
         else {
@@ -44,7 +62,9 @@ class HasMany extends Relationship
 
             $data = array_get($items, 'data', []);
 
-            if (!Arr::isAssoc($data)) {
+            if (!Arr::isAssoc($data) && !empty($data)) {
+
+                $this->showRelationData();
 
                 foreach ($data as $relation) {
                     $this->relations()->push((new Relation($relation)));
@@ -69,6 +89,7 @@ class HasMany extends Relationship
     public function hidePagination()
     {
         $this->showPagination = false;
+
         return $this;
     }
 
@@ -143,19 +164,26 @@ class HasMany extends Relationship
     }
 
     /**
-     * Create a paginator from the relations.
-     *
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
     public function paginator()
     {
-        $items = $this->relations();
+        if (!$this->paginator) {
 
-        return new Paginator(
-            $items,
-            $items->count(),
-            self::DEFAULT_PER_PAGE
-        );
+            $items = new Collection;
+
+            if ($this->relations) {
+                $items = $this->relations;
+            }
+
+            $this->paginator = new LengthAwarePaginator(
+                $items,
+                $items->count(),
+                self::DEFAULT_PER_PAGE
+            );
+        }
+
+        return $this->paginator;
     }
 
     /**
@@ -167,32 +195,22 @@ class HasMany extends Relationship
     }
 
     /**
-     * {$inheritDoc}
+     * Set a results paginator to the relationship.
+     *
+     * @param \Illuminate\Pagination\LengthAwarePaginator $paginator
+     * @return $this
      */
-    public function relations()
+    public function setPaginator(LengthAwarePaginator $paginator)
     {
-        if (!$this->relations) {
+        $this->paginator = $paginator;
 
-            $this->relations = new Collection;
+        $this->relations = new Relations;
 
-            foreach ($this->paginator() as $relation) {
+        $this->paginator->getCollection()->each(function($item, $key) {
+            $this->relations->put($key, (new Relation($item)));
+        });
 
-                if ($relation instanceof Model) {
-                    $this->relations->push(
-                        new Relation([
-                            'id' => $relation->getRouteKey(),
-                            'type' => $relation->type()
-                        ])
-                    );
-                }
-
-                if ($relation instanceof Relation) {
-                    $this->relations->push($relation);
-                }
-            }
-        }
-
-        return $this->relations;
+        return $this;
     }
 
     /**
@@ -203,6 +221,7 @@ class HasMany extends Relationship
     public function showPagination()
     {
         $this->showPagination = true;
+
         return $this;
     }
 }

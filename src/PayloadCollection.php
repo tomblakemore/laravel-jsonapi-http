@@ -2,10 +2,8 @@
 
 namespace JsonApiHttp;
 
-use Illuminate\Pagination\LengthAwarePaginator as Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use JsonApiHttp\Model;
-use JsonApiHttp\Resource;
 
 class PayloadCollection extends Payload
 {
@@ -15,6 +13,14 @@ class PayloadCollection extends Payload
      * @var int
      */
     const DEFAULT_PER_PAGE = 15;
+
+    /**
+     * A paginated set of resources or models.
+     *
+     * @access protected
+     * @var \Illuminate\Pagination\LengthAwarePaginator
+     */
+    protected $paginator;
 
     /**
      * Show pagination in meta.
@@ -29,30 +35,20 @@ class PayloadCollection extends Payload
      */
     public function __construct($items = [])
     {
-        if ($items instanceof Collection || $items instanceof Paginator) {
+        if ($items instanceof Collection) {
 
-            foreach ($items as $resource) {
+            foreach ($items as $item) {
 
-                if ($resource instanceof Model) {
-
-                    $this->resources()->push(
-                        new Resource([
-                            'id' => $resource->getRouteKey(),
-                            'type' => $resource->type(),
-                            'attributes' => $resource->attributesToArray(),
-                            'meta' => $resource->meta()
-                        ])
-                    );
-                }
-
-                elseif ($resource instanceof Resource) {
-                    $this->resources()->push($resource);
-                }
-
-                else {
-                    $this->resources()->push((new Resource($resource)));
+                if ($item instanceof Resource) {
+                    $this->resources()->push($item);
+                } else {
+                    $this->resources()->push((new Resource($item)));
                 }
             }
+        }
+
+        elseif ($items instanceof LengthAwarePaginator) {
+            $this->setPaginator($items);
         }
 
         else {
@@ -68,6 +64,7 @@ class PayloadCollection extends Payload
     public function hidePagination()
     {
         $this->showPagination = false;
+
         return $this;
     }
 
@@ -76,7 +73,7 @@ class PayloadCollection extends Payload
      */
     public function jsonSerialize()
     {
-        if ($this->showPagination) {
+        if ($this->showPagination === true) {
 
             $paginator = $this->paginator();
 
@@ -139,24 +136,38 @@ class PayloadCollection extends Payload
     }
 
     /**
-     * Create a paginator from the resources.
-     *
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
     public function paginator()
     {
-        $items = $this->resources();
-        $total = $items->count();
-        $perPage = self::DEFAULT_PER_PAGE;
-        $page = 1;
+        if (!$this->paginator) {
 
-        if (($pagination = $this->meta()->get('pagination'))) {
-            $total = $pagination['total'];
-            $perPage = $pagination['per-page'];
-            $page = $pagination['current-page'];
+            $items = new Collection;
+            $total = 0;
+            $perPage = self::DEFAULT_PER_PAGE;
+            $page = 1;
+
+            if ($this->resources) {
+
+                $items = $this->resources;
+                $total = $items->count();
+
+                if (($pagination = $this->meta()->get('pagination'))) {
+                    $total = $pagination['total'];
+                    $perPage = $pagination['per-page'];
+                    $page = $pagination['current-page'];
+                }
+            }
+
+            $this->paginator = new LengthAwarePaginator(
+                $items,
+                $total,
+                $perPage,
+                $page
+            );
         }
 
-        return new Paginator($items, $total, $perPage, $page);
+        return $this->paginator;
     }
 
     /**
@@ -168,15 +179,22 @@ class PayloadCollection extends Payload
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * Set a results paginator to the payload.
+     *
+     * @param \Illuminate\Pagination\LengthAwarePaginator $paginator
+     * @return $this
      */
-    public function resources()
+    public function setPaginator(LengthAwarePaginator $paginator)
     {
-        if (!$this->resources) {
-            $this->resources = new Collection;
-        }
+        $this->paginator = $paginator;
 
-        return $this->resources;
+        $this->resources = new Resources;
+
+        $this->paginator->getCollection()->each(function($item, $key) {
+            $this->resources->put($key, (new Resource($item)));
+        });
+
+        return $this;
     }
 
     /**
@@ -187,6 +205,7 @@ class PayloadCollection extends Payload
     public function showPagination()
     {
         $this->showPagination = true;
+
         return $this;
     }
 }

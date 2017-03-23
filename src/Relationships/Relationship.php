@@ -2,17 +2,20 @@
 
 namespace JsonApiHttp\Relationships;
 
-use Illuminate\Support\Collection;
-use JsonApiHttp\Contracts\Relationship as RelationshipContract;
+use JsonApiHttp\Contracts\RelationshipInterface;
 use JsonApiHttp\Links;
+use JsonApiHttp\Meta;
+use JsonApiHttp\Relations;
 
-class Relationship extends Collection implements RelationshipContract
+use Illuminate\Support\Collection;
+
+class Relationship extends Collection implements RelationshipInterface
 {
     /**
      * A collection of relations outside of the parent collection.
      *
      * @access protected
-     * @var \Illuminate\Support\Collection
+     * @var \JsonApiHttp\Relations
      */
     protected $relations;
 
@@ -90,7 +93,7 @@ class Relationship extends Collection implements RelationshipContract
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Links
      */
     public function links()
     {
@@ -104,11 +107,11 @@ class Relationship extends Collection implements RelationshipContract
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Meta
      */
     public function meta()
     {
-        $meta = $this->get('meta', (new Collection));
+        $meta = $this->get('meta', (new Meta));
 
         if (!$this->has('meta')) {
             $this->put('meta', $meta);
@@ -126,12 +129,12 @@ class Relationship extends Collection implements RelationshipContract
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Relations
      */
     public function relations()
     {
         if (!$this->relations) {
-            $this->relations = new Collection;
+            $this->relations = new Relations;
         }
 
         return $this->relations;
@@ -145,6 +148,7 @@ class Relationship extends Collection implements RelationshipContract
     public function showRelationData()
     {
         $this->showRelationData = true;
+
         return $this;
     }
 }

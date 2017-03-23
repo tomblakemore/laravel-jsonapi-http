@@ -3,7 +3,6 @@
 namespace JsonApiHttp;
 
 use Illuminate\Support\Collection;
-use JsonApiHttp\Resource;
 
 class Included extends Collection
 {
@@ -15,6 +14,7 @@ class Included extends Collection
         if ($value instanceof Resource) {
 
             foreach ($this->items as $item) {
+
                 if ($item->id() === $value->id()
                         && $item->type() === $value->type()) {
                     return $this;

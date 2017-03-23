@@ -4,10 +4,6 @@ namespace JsonApiHttp;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use JsonApiHttp\Error;
-use JsonApiHttp\Included;
-use JsonApiHttp\Links;
-use JsonApiHttp\Resource;
 
 class Payload extends Collection
 {
@@ -15,7 +11,7 @@ class Payload extends Collection
      * A collection of resources outside of the parent collection.
      *
      * @access protected
-     * @var \Illuminate\Support\Collection
+     * @var \JsonApiHttp\Resources
      */
     protected $resources;
 
@@ -24,35 +20,39 @@ class Payload extends Collection
      */
     public function __construct($items = [])
     {
-        $data = array_get($items, 'data', []);
-
-        if (Arr::isAssoc($data)) {
-            $data = array($data);
+        if ($items instanceof Model) {
+            $this->resources()->push((new Resource($items)));
         }
 
-        foreach ($data as $resource) {
+        else {
 
-            if (($type = array_get($resource, 'type'))) {
+            $data = array_get($items, 'data', []);
+
+            if (Arr::isAssoc($data)) {
+                $data = array($data);
+            }
+
+            foreach ($data as $resource) {
                 $this->resources()->push((new Resource($resource)));
             }
-        }
 
-        foreach (array_get($items, 'errors', []) as $error) {
-            $this->errors()->push((new Error($error)));
-        }
+            foreach (array_get($items, 'errors', []) as $error) {
+                $this->errors()->push((new Error($error)));
+            }
 
-        foreach (array_get($items, 'included', []) as $include) {
-            $this->included()->push((new Resource($include)));
-        }
+            foreach (array_get($items, 'included', []) as $include) {
+                $this->included()->push((new Resource($include)));
+            }
 
-        foreach (array_get($items, 'links', []) as $name => $link) {
-            $this->links()->put($name, $link);
-        }
+            foreach (array_get($items, 'links', []) as $name => $link) {
+                $this->links()->put($name, $link);
+            }
 
-        $meta = array_get($items, 'meta', []);
+            $meta = array_get($items, 'meta', []);
 
-        if (!empty($meta)) {
-            $this->put('meta', (new Collection($meta)));
+            if (!empty($meta)) {
+                $this->put('meta', (new Collection($meta)));
+            }
         }
     }
 
@@ -73,11 +73,11 @@ class Payload extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Errors
      */
     public function errors()
     {
-        $errors = $this->get('errors', (new Collection));
+        $errors = $this->get('errors', (new Errors));
 
         if (!$this->has('errors')) {
             $this->put('errors', $errors);
@@ -87,7 +87,7 @@ class Payload extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Included
      */
     public function included()
     {
@@ -133,7 +133,7 @@ class Payload extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Links
      */
     public function links()
     {
@@ -147,11 +147,11 @@ class Payload extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Meta
      */
     public function meta()
     {
-        $meta = $this->get('meta', (new Collection));
+        $meta = $this->get('meta', (new Meta));
 
         if (!$this->has('meta')) {
             $this->put('meta', $meta);
@@ -161,7 +161,7 @@ class Payload extends Collection
     }
 
     /**
-     * @return \App\Http\JsonApi\Resource
+     * @return \JsonApiHttp\Resource
      */
     public function resource()
     {
@@ -171,12 +171,12 @@ class Payload extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Resources
      */
     public function resources()
     {
         if (!$this->resources) {
-            $this->resources = new Collection;
+            $this->resources = new Resources;
         }
 
         return $this->resources;

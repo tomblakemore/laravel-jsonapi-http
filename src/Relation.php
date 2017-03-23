@@ -11,6 +11,14 @@ class Relation extends Collection
      */
     public function __construct($items = [])
     {
+        if ($items instanceof Model) {
+
+            $items = [
+                'id' => $items->getRouteKey(),
+                'type' => $items->type()
+            ];
+        }
+
         $this->put('id', array_get($items, 'id'));
         $this->put('type', array_get($items, 'type'));
     }

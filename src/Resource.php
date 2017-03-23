@@ -4,9 +4,7 @@ namespace JsonApiHttp;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use JsonApiHttp\Attributes;
-use JsonApiHttp\Links;
-use JsonApiHttp\Relationships;
+
 use JsonApiHttp\Relationships\BelongsTo;
 use JsonApiHttp\Relationships\HasMany;
 
@@ -17,6 +15,16 @@ class Resource extends Collection
      */
     public function __construct($items = [])
     {
+        if ($items instanceof Model) {
+
+            $items = [
+                'id' => $items->getRouteKey(),
+                'type' => $items->type(),
+                'attributes' => $items->attributesToArray(),
+                'meta' => $items->meta()
+            ];
+        }
+
         $this->put('id', array_get($items, 'id'));
         $this->put('type', array_get($items, 'type'));
 
@@ -55,7 +63,7 @@ class Resource extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Attributes
      */
     public function attributes()
     {
@@ -109,7 +117,7 @@ class Resource extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Links
      */
     public function links()
     {
@@ -123,11 +131,11 @@ class Resource extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Meta
      */
     public function meta()
     {
-        $meta = $this->get('meta', (new Collection));
+        $meta = $this->get('meta', (new Meta));
 
         if (!$this->has('meta')) {
             $this->put('meta', $meta);
@@ -137,7 +145,7 @@ class Resource extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Relationships
      */
     public function relationships()
     {

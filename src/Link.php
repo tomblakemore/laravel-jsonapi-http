@@ -36,11 +36,11 @@ class Link extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Meta
      */
     public function meta()
     {
-        $meta = $this->get('meta', (new Collection));
+        $meta = $this->get('meta', (new Meta));
 
         if (!$this->has('meta')) {
             $this->put('meta', $meta);

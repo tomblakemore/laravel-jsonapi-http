@@ -3,7 +3,6 @@
 namespace JsonApiHttp;
 
 use Illuminate\Support\Collection;
-use JsonApiHttp\Links;
 
 class Error extends Collection
 {
@@ -50,7 +49,7 @@ class Error extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Links
      */
     public function links()
     {
@@ -64,11 +63,11 @@ class Error extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Meta
      */
     public function meta()
     {
-        $meta = $this->get('meta', (new Collection));
+        $meta = $this->get('meta', (new Meta));
 
         if (!$this->has('meta')) {
             $this->put('meta', $meta);
@@ -78,11 +77,11 @@ class Error extends Collection
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \JsonApiHttp\Source
      */
     public function source()
     {
-        $source = $this->get('source', (new Collection));
+        $source = $this->get('source', (new Source));
 
         if (!$this->has('source')) {
             $this->put('source', $source);

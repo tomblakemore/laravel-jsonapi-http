@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model as Eloquent;
+
 use JsonApiHttp\Contracts\Model as ModelContract
 use JsonApiHttp\Exceptions\ModelTypeException;
 
@@ -66,6 +67,6 @@ abstract class Model extends Eloquent implements ModelContract
     {
         $name = class_basename($this);
 
-        throw new ModelTypeException('Unknown JSON:API type');
+        throw new ModelTypeException('Missing model type');
     }
 }

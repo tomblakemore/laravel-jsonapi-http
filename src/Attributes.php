@@ -15,14 +15,10 @@ class Attributes extends Collection
 
         foreach ($serialized as $key => $value) {
 
-            if (is_string($value))) {
+            $date = \DateTime::createFromFormat('Y-m-d H:i:s', $value);
 
-                $date = \DateTime::createFromFormat('Y-m-d H:i:s', $value);
-
-                // Return dates in the JSON:API date string format.
-                if ($date !== false) {
-                    $serialized[$key] = $date->format('Y-m-d\TH:i:s.u\Z');
-                }
+            if (is_string($value) && $date !== false) {
+                $serialized[$key] = $date->format('Y-m-d\TH:i:s.u\Z');
             }
         }
 
@@ -53,14 +49,10 @@ class Attributes extends Collection
 
         foreach ($this->toArray() as $key => $value) {
 
-            if (is_string($value)) {
+            $date = \DateTime::createFromFormat('Y-m-d\TH:i:s.u\Z', $value);
 
-                $date = \DateTime::createFromFormat('Y-m-d\TH:i:s.u\Z', $value);
-
-                // Convert JSON:API date strings to a database format.
-                if ($date !== false) {
-                    $value = $date->format('Y-m-d H:i:s');
-                }
+            if (is_string($value) && $date !== false) {
+                $value = $date->format('Y-m-d H:i:s');
             }
 
             $dbArray[preg_replace('/\-/', '_', $key)] = $value;
