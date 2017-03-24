@@ -26,6 +26,10 @@ Inside your application folder run:
 
     composer require tomblakemore/laravel-jsonapi-http
 
+## Tests
+
+These will be added soon!
+
 ## Setup
 
 Add the service provider to the `config/app.php` file.
@@ -69,7 +73,7 @@ Add the following middleware groups to the `app\Http\Kernel.php` class.
 Below is a simple model and controller example for showing a list of people 
 and fetching a specific person.
 
-Create `people` table.
+Create the `people` table.
 
     php artisan make:migration create_people_table --create=people
 
@@ -82,7 +86,7 @@ Add the below to the migration file.
      */
     public function up()
     {
-        Schema::create('doctors', function (Blueprint $table) {
+        Schema::create('people', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->timestamps();
@@ -91,7 +95,7 @@ Add the below to the migration file.
 
 Create the `Person` model and fill in the property `$type`. The type is the 
 JSON:API resource type and should be the plural representation of the model 
-name.
+name, so in this case `people`.
 
     <?php
 
@@ -177,12 +181,10 @@ The resources are now accessible on the following endpoints:
 
 ### Relationships
 
-Objects can be represented by JSON:API relationship endpoints.
+Objects can be represented by JSON:API relationship endpoints. We'll create a 
+simple `Patient` > `Doctor` relationship as an example.
 
-We'll expand our example to include `Doctor` and `Patient` objects. A `Person` 
-belongs to a `Doctor` and a `Doctor` has many `Patient` objects.
-
-Create a `doctors` table.
+Create the `doctors` table.
 
     php artisan make:migration create_doctors_table --create=doctors
 
@@ -287,7 +289,7 @@ Create a controller for the relationships.
         }
     }
 
-Create a `patients` table.
+Create the `patients` table.
 
     php artisan make:migration create_patients_table --create=patients
 
@@ -300,7 +302,7 @@ Add the below to the migration file.
      */
     public function up()
     {
-        Schema::create('doctors', function (Blueprint $table) {
+        Schema::create('patients', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('doctor_id')->unsigned()->index();
             $table->foreign('doctor_id')->references('id')->on('doctors');
