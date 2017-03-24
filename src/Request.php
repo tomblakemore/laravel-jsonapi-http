@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Arr;
 
+use JsonApiHttp\Exceptions\ControllerException;
+use JsonApiHttp\Exceptions\RequestException;
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
 
@@ -49,6 +51,7 @@ class Request extends HttpRequest
      * @param array $expressions
      * @param array $ins
      * @return void
+     * @throws \JsonApiHttp\Exceptions\RequestException
      */
     protected function addExpressionToQuery(
         $expression,
@@ -76,7 +79,7 @@ class Request extends HttpRequest
         } elseif (substr_count($expression, ',') === 0 && $pipes > 0) {
             $boolean = 'OR';
         } else {
-            abort(400); // Bad Request
+            throw new RequestException('Bad request');
         }
 
         $items = explode($boolean === 'AND' ? ',' : '|', $expression);
@@ -419,6 +422,7 @@ class Request extends HttpRequest
      *
      * @param mixed $query
      * @return $this
+     * @throws \JsonApiHttp\Exceptions\RequestException
      */
     public function filter($query)
     {
@@ -448,7 +452,7 @@ class Request extends HttpRequest
         if (mb_strlen($filter) > 0) {
 
             if (substr_count($filter, '(') !== substr_count($filter, ')')) {
-                abort(400); // Bad Request
+                throw new RequestException('Bad request');
             }
 
             $pattern = '/^\((.*)\)$/';
@@ -830,7 +834,7 @@ class Request extends HttpRequest
      * Return the resource type of request from the controller.
      *
      * @return string
-     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+     * @throws \JsonApiHttp\Exceptions\ControllerException
      */
     public function type()
     {
@@ -841,7 +845,7 @@ class Request extends HttpRequest
         $properties = (new \ReflectionClass($class))->getDefaultProperties();
 
         if (!($type = Arr::get($properties, 'type'))) {
-            abort(500, "Missing type in controller '{$class}'");
+            throw new ControllerException('Missing type');
         }
 
         return $type;

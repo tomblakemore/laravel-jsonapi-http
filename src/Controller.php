@@ -1,45 +1,43 @@
 <?php
 
-namespace JsonApiHttp\Traits;
+namespace JsonApiHttp;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Collection;
 use Illuminate\Support\MessageBag;
 
 use IteratorAggregate;
 
-use JsonApiHttp\Error;
-use JsonApiHttp\Exceptions\JsonApiHttpException;
-use JsonApiHttp\Model;
-use JsonApiHttp\Payload;
-use JsonApiHttp\PayloadCollection;
-use JsonApiHttp\Relation;
-use JsonApiHttp\Relationships;
+use JsonApiHttp\Exceptions\ControllerException;
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
-use JsonApiHttp\Request;
-use JsonApiHttp\Resource;
 
-trait JsonApiResourceResponses
+class Controller extends BaseController
 {
     /**
-     * The type of JsonApi resource.
+     * The resource type.
      *
      * @var string
      */
-    public $type = '';
+    protected $type = '';
 
     /**
      * Add a resource to the payload.
      *
      * @access protected
+     * @param \JsonApiHttp\Request $request
      * @param \JsonApiHttp\Payload $payload
      * @param \JsonApiHttp\Model $model
      * @return void
      */
-    protected function addResource(Payload $payload, Model $model)
+    protected function addResource(
+        Request $request,
+        Payload $payload,
+        Model $model
+    )
     {
         $id = $model->getRouteKey();
 
@@ -54,7 +52,7 @@ trait JsonApiResourceResponses
             false
         ));
 
-        $includes = request()->includes();
+        $includes = $request->includes();
 
         $this->addRelationships($payload, $resource, $model, $includes);
     }
@@ -63,17 +61,19 @@ trait JsonApiResourceResponses
      * Add a collection of resources to the payload.
      *
      * @access protected
+     * @param \JsonApiHttp\Request $request
      * @param \JsonApiHttp\Payload $payload
      * @param \IteratorAggregate $items
      * @return void
      */
     protected function addResources(
+        Request $request,
         Payload $payload,
         IteratorAggregate $items
     )
     {
         foreach ($items as $model) {
-            $this->addResource($payload, $model);
+            $this->addResource($request, $payload, $model);
         }
     }
 
@@ -216,45 +216,9 @@ trait JsonApiResourceResponses
         $response = new Response;
 
         $response->setContent($payload);
-        $response->setStatusCode(422); // Unprocessable Entity
+        $response->setStatusCode(422);
 
         return $response;
-    }
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @param \JsonApiHttp\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
-    {
-        $response = new Response;
-
-        if (!($items = $this->items($request))) {
-            return $response->setStatusCode(404); // Not Found
-        }
-
-        $payload = $this->payload($request, $items);
-
-        $response->setContent($payload);
-        $response->setStatusCode(200); // OK
-
-        return $response;
-    }
-
-    /**
-     * Get paginated items for a request passing an optional starting query.
-     *
-     * @access protected
-     * @param \JsonApiHttp\Request $request
-     * @param mixed $query
-     * @return \Illuminate\Pagination\LengthAwarePaginator
-     * @throws \JsonApiHttp\Exceptions\JsonApiHttpException
-     */
-    protected function items(Request $request, $query = null)
-    {
-        throw new JsonApiHttpException('Method implementation missing');
     }
 
     /**
@@ -294,29 +258,9 @@ trait JsonApiResourceResponses
             ));
         }
 
-        $this->addResources($payload, $items);
+        $this->addResources($request, $payload, $items);
 
         return $payload;
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Http\Requests\JsonApiRequest $request
-     * @param \App\Model $model
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Request $request, Model $model)
-    {
-        $response = new Response;
-
-        if (method_exists($this, 'payload')) {
-            $response->setContent($this->payload($request, $model));
-        }
-
-        $response->setStatusCode(200); // OK
-
-        return $response;
     }
 
     /**
@@ -324,10 +268,14 @@ trait JsonApiResourceResponses
      *
      * @access protected
      * @return string
-     * @throws \JsonApiHttp\Exceptions\JsonApiHttpException
+     * @throws \JsonApiHttp\Exceptions\ControllerException
      */
     protected function type()
     {
-        throw new JsonApiHttpException('Method implementation missing');
+        if (!$this->type) {
+            throw new ControllerException('Type missing');
+        }
+
+        return $this->type;
     }
 }

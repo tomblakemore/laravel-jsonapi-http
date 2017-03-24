@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use JsonApiHttp\Request;
 
@@ -22,11 +22,11 @@ class VerifyContent
                 if (str_contains($contentType, 'json')) {
 
                     if (!($content = $request->getContent())) {
-                        abort(400, 'No content'); // Bad Request
+                        return response(null, 400);
                     }
 
                     if (!($json = json_decode($content, true))) {
-                        abort(400, 'Not valid JSON content'); // Bad Request
+                        return response(null, 400);
                     }
                 }
             }

@@ -8,26 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 
-use JsonApiHttp\Error;
-use JsonApiHttp\Exceptions\JsonApiHttpException;
-use JsonApiHttp\Model;
-use JsonApiHttp\Payload;
-use JsonApiHttp\PayloadCollection;
-use JsonApiHttp\Relation;
+use JsonApiHttp\Exceptions\ControllerException;
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
-use JsonApiHttp\Request;
-use JsonApiHttp\Resource;
 
-trait JsonApiRelationshipResponses
+class RelationshipsController extends Controller
 {
-    /**
-     * The type of JsonApi resource.
-     *
-     * @var string
-     */
-    public $type = '';
-
     /**
      * Return the total number of resources.
      *
@@ -51,7 +37,7 @@ trait JsonApiRelationshipResponses
         ]);
 
         $response->setContent($payload);
-        $response->setStatusCode(200); // OK
+        $response->setStatusCode(200);
 
         return $response;
     }
@@ -66,12 +52,14 @@ trait JsonApiRelationshipResponses
      */
     public function index(Request $request, Model $model, $relation)
     {
+        $response = new Response;
+
         $related = $model->{$relation}();
 
         if ($related instanceof BelongsTo) {
 
             if ((!$relatedItem = $related->first())) {
-                abort(404, 'No resource found'); // Not Found
+                return $response->setStatusCode(404);
             }
 
             $payload = new Payload($relatedItem);
@@ -82,7 +70,7 @@ trait JsonApiRelationshipResponses
         else { // BelongsToMany or HasMany
 
             if (!($relatedItems = $this->relatedItems($request, $related))) {
-                abort(404, 'No resources found'); // Not Found
+                return $response->setStatusCode(404);
             }
 
             $payload = new PayloadCollection($relatedItems);
@@ -96,12 +84,10 @@ trait JsonApiRelationshipResponses
             ));
         }
 
-        $this->addResources($payload, $relatedItems);
-
-        $response = new Response;
+        $this->addResources($request, $payload, $relatedItems);
 
         $response->setContent($payload);
-        $response->setStatusCode(200); // OK
+        $response->setStatusCode(200);
 
         return $response;
     }
@@ -113,7 +99,7 @@ trait JsonApiRelationshipResponses
      * @param \JsonApiHttp\Request $request
      * @param mixed $query
      * @return \Illuminate\Pagination\LengthAwarePaginator
-     * @throws \JsonApiHttp\Exceptions\JsonApiHttpException
+     * @throws \JsonApiHttp\Exceptions\ControllerException
      */
     protected function relatedItems(Request $request, $query)
     {
@@ -129,7 +115,7 @@ trait JsonApiRelationshipResponses
         $lastPage = $paginator->lastPage();
 
         if ($currentPage > $lastPage) {
-            throw new JsonApiHttpException('Invalid paginator');
+            throw new ControllerException('Invalid paginator');
         }
 
         return $paginator;
@@ -173,9 +159,7 @@ trait JsonApiRelationshipResponses
 
         else { // BelongsToMany or HasMany
 
-            if (!($relatedItems = $this->relatedItems($request, $related))) {
-                abort(404, 'No resources found'); // Not Found
-            }
+            $relatedItems = $this->relatedItems($request, $related)
 
             $relationship = new HasManyRelationship($relatedItems);
 
@@ -217,7 +201,7 @@ trait JsonApiRelationshipResponses
 
         $response->header('X-Resource-Id', $model->getRouteKey());
         $response->setContent($relationship);
-        $response->setStatusCode(200); // OK
+        $response->setStatusCode(200);
 
         return $response;
     }

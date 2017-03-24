@@ -1,21 +1,20 @@
 <?php
 
-namespace App;
+namespace JsonApiHttp;
 
 use Illuminate\Database\Eloquent\Model as Eloquent;
 
-use JsonApiHttp\Contracts\Model as ModelContract
-use JsonApiHttp\Exceptions\ModelTypeException;
+use JsonApiHttp\Contracts\Model as ModelContract;
+use JsonApiHttp\Exceptions\ModelException;
 
 abstract class Model extends Eloquent implements ModelContract
 {
     /**
-     * Default sorting string.
+     * The resource type.
      *
-     * @static
      * @var string
      */
-    public static $sort = '-id';
+    protected $type = '';
 
     /**
      * Get the fillable relations for the model.
@@ -61,12 +60,14 @@ abstract class Model extends Eloquent implements ModelContract
      * Return the type of the object for the JSON:API output.
      *
      * @return string
-     * @throws \JsonApiHttp\Exceptions\ModelTypeException
+     * @throws \JsonApiHttp\Exceptions\ModelException
      */
     public function type()
     {
-        $name = class_basename($this);
+        if (!$this->type) {
+            throw new ModelException('Missing type');
+        }
 
-        throw new ModelTypeException('Missing model type');
+        return $this->type;
     }
 }

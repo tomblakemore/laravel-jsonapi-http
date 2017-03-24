@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use JsonApiHttp\Request;
 
 class AddResourceRelationshipsToModel
@@ -42,11 +43,11 @@ class AddResourceRelationshipsToModel
                     $repository = \App::make(str_plural($relation->type()));
 
                     if (!($related = $repository->get($id))) {
-                        abort(422, 'Unmatched resource type'); // Unprocessable Entity
+                        return response(null, 422);
                     }
 
                     if ($related->instance_id !== $model->instance_id) {
-                        abort(404, 'Resource not found'); // Not Found
+                        return response(null, 404);
                     }
 
                     if ($relations instanceof BelongsTo) {

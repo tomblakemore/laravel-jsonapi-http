@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use JsonApiHttp\Request;
 
@@ -20,15 +20,15 @@ class VerifyContentTypeHeader
             $contentType = $request->header('Content-Type');
 
             if (is_array($contentType)) {
-                abort(406, "Too many 'Content-Type' headers"); // Not Acceptable
+                return response(null, 406);
             }
 
             if (!starts_with($contentType, 'application/vnd.api+json')) {
-                abort(406, "Unsupported 'Content-Type' header"); // Not Acceptable
+                return response(null, 406);
             }
 
             if (!ends_with($contentType, 'application/vnd.api+json')) {
-                abort(415, "Unsupported media type in 'Content-Type' header"); // Unsupported Media Type
+                return response(null, 406);
             }
         }
 

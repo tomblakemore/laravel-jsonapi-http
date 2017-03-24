@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 use JsonApiHttp\Request;
 
 class RemoveRelationshipFromModel

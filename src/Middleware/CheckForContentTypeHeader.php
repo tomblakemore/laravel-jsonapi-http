@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use JsonApiHttp\Request;
 
@@ -18,7 +18,7 @@ class CheckForContentTypeHeader
         if ($request->getContent()) {
 
             if (!($contentType = $request->header('Content-Type'))) {
-                abort(400, "Missing 'Content-Type' header"); // Bad Request
+                return response(null, 400);
             }
         }
 

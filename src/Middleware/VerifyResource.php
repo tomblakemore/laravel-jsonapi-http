@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Arr;
@@ -20,31 +20,31 @@ class VerifyResource
         if (in_array($request->method(), ['PATCH', 'POST', 'PUT'])) {
 
             if (!($model = $request->model())) {
-                abort(422, 'Missing model'); // Unprocessable Entity
+                return response(null, 422);
             }
 
             if (!($resource = $request->resource())) {
-                abort(422, 'Missing resource'); // Unprocessable Entity
+                return response(null, 422);
             }
 
             if ($resource->type() !== $request->type()) {
-                abort(422, 'Unmatched resource type'); // Unprocessable Entity
+                return response(null, 422);
             }
 
             $attributes = $resource->attributes()->toArray();
 
             if (!empty($attributes) && !Arr::isAssoc($attributes)) {
-                abort(400, 'Invalid attributes'); // Bad Request
+                return response(null, 400);
             }
 
             if ($resource->type() !== $model->type()) {
-                abort(422, 'Unmatched resource type'); // Unprocessable Entity
+                return response(null, 422);
             }
 
             if ($model->exists) {
 
                 if ($resource->id() !== $model->getRouteKey()) {
-                    abort(404, 'Unmatched resource'); // Not Found
+                    return response(null, 404);
                 }
             }
 
@@ -60,15 +60,15 @@ class VerifyResource
                 $method = snake_case(camel_case($name));
 
                 if (!method_exists($model, $method)) {
-                    abort(422, 'Unmatched relation'); // Unprocessable Entity
+                    return response(null, 422);
                 }
 
                 $belongsTo = ($model->{$method}() instanceof BelongsTo);
 
                 if ($belongsTo && $relationship->hasMany()) {
-                    abort(422, 'Unmatched relationship type'); // Unprocessable Entity
+                    return response(null, 422);
                 } elseif (!$relationship->hasMany() && !$belongsTo) {
-                    abort(422, 'Unmatched relationship type'); // Unprocessable Entity
+                    return response(null, 422);
                 }
 
                 if ($name === 'parent') {
@@ -78,7 +78,7 @@ class VerifyResource
                     if (($relation = $parent->relation())) {
 
                         if ($relation->type() !== $resource->type()) {
-                            abort(422, 'Invalid parent type'); // Unprocessable Entity
+                            return response(null, 422);
                         }
                     }
                 }

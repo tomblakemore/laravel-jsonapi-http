@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use JsonApiHttp\Request;
 
@@ -36,8 +36,8 @@ class CheckAcceptHeaders
                 }
             }
 
-            if ($count > 0 && $count === $invalid) {
-                abort(406, "Unsupported 'Accept' header"); // Not Acceptable
+            if ($count === 0 || $count > 0 && $count === $invalid) {
+                return response(null, 406);
             }
         }
 

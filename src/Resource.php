@@ -77,11 +77,11 @@ class Resource extends Collection
     }
 
     /**
-     * @return string
+     * @return mixed
      */
     public function id()
     {
-        return strval($this->get('id'));
+        return $this->get('id');
     }
 
     /**

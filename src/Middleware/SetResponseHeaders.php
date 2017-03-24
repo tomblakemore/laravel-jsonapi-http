@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace JsonApiHttp\Middleware;
 
 use JsonApiHttp\Payload;
 use JsonApiHttp\Request;
