@@ -31,6 +31,7 @@ Add the following middleware groups to the `app\Http\Kernel.php` class.
         ...
 
         'jsonapi' => [
+            \JsonApiHttp\Middleware\SetRequest::class,
             \JsonApiHttp\Middleware\CheckAcceptHeaders::class,
             \JsonApiHttp\Middleware\CheckForContentTypeHeader::class,
             \JsonApiHttp\Middleware\VerifyContentTypeHeader::class,
