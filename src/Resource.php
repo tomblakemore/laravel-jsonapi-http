@@ -5,6 +5,7 @@ namespace JsonApiHttp;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
+use JsonApiHttp\Contracts\Model;
 use JsonApiHttp\Relationships\BelongsTo;
 use JsonApiHttp\Relationships\HasMany;
 

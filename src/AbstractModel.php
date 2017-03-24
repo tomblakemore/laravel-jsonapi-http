@@ -4,10 +4,10 @@ namespace JsonApiHttp;
 
 use Illuminate\Database\Eloquent\Model as Eloquent;
 
-use JsonApiHttp\Contracts\Model as ModelContract;
+use JsonApiHttp\Contracts\Model;
 use JsonApiHttp\Exceptions\ModelException;
 
-abstract class Model extends Eloquent implements ModelContract
+abstract class AbstractModel extends Eloquent implements Model
 {
     /**
      * The resource type.

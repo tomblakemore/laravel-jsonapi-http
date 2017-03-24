@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Arr;
 
+use JsonApiHttp\Contracts\Model;
 use JsonApiHttp\Exceptions\ControllerException;
+use JsonApiHttp\Exceptions\ModelException;
 use JsonApiHttp\Exceptions\RequestException;
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
@@ -19,7 +21,7 @@ class Request extends HttpRequest
 {
     /**
      * @access protected
-     * @var \JsonApiHttp\Model
+     * @var \JsonApiHttp\Contract\Model
      */
     protected $model;
 
@@ -614,7 +616,7 @@ class Request extends HttpRequest
     /**
      * Get the model bound to the route or contruct from payload.
      *
-     * @return \JsonApiHttp\Model
+     * @return \JsonApiHttp\Contract\Model
      * @throws \JsonApiHttp\Exceptions\ModelException
      */
     public function model()

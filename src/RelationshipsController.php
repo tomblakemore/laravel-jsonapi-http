@@ -1,6 +1,6 @@
 <?php
 
-namespace JsonApiHttp\Traits;
+namespace JsonApiHttp;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -8,90 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 
+use JsonApiHttp\Contracts\Model;
 use JsonApiHttp\Exceptions\ControllerException;
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
 
 class RelationshipsController extends Controller
 {
-    /**
-     * Return the total number of resources.
-     *
-     * @param \JsonApiHttp\Request $request
-     * @param \JsonApiHttp\Model $model
-     * @param string $relation
-     * @return \Illuminate\Http\Response
-     */
-    public function count(Request $request, Model $model, $relation)
-    {
-        $response = new Response;
-
-        $query = $model->{$relation}();
-
-        $request->filter($query);
-
-        $payload = new Payload([
-            'meta' => [
-                'count' => $query->count()
-            ]
-        ]);
-
-        $response->setContent($payload);
-        $response->setStatusCode(200);
-
-        return $response;
-    }
-
-    /**
-     * Fetch a resource or collection of resources for a relationship.
-     *
-     * @param \JsonApiHttp\Request $request
-     * @param \JsonApiHttp\Model $model
-     * @param string $relation
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request, Model $model, $relation)
-    {
-        $response = new Response;
-
-        $related = $model->{$relation}();
-
-        if ($related instanceof BelongsTo) {
-
-            if ((!$relatedItem = $related->first())) {
-                return $response->setStatusCode(404);
-            }
-
-            $payload = new Payload($relatedItem);
-
-            $relatedItems = (new Collection)->push($relatedItem);
-        }
-
-        else { // BelongsToMany or HasMany
-
-            if (!($relatedItems = $this->relatedItems($request, $related))) {
-                return $response->setStatusCode(404);
-            }
-
-            $payload = new PayloadCollection($relatedItems);
-
-            $payload->paginator()->setPath(
-                route("{$model->type()}.relations.index", [
-                    'id' => $model->getRouteKey(),
-                    'relation' => $relation
-                ],
-                false
-            ));
-        }
-
-        $this->addResources($request, $payload, $relatedItems);
-
-        $response->setContent($payload);
-        $response->setStatusCode(200);
-
-        return $response;
-    }
-
     /**
      * Get paginated items for a request passing an optional starting query.
      *
@@ -122,11 +45,55 @@ class RelationshipsController extends Controller
     }
 
     /**
+     * Build a relations payload .
+     *
+     * @access protected
+     * @param \JsonApiHttp\Request $request
+     * @param \JsonApiHttp\Contracts\Model $model
+     * @param string $relation
+     * @return \Illuminate\Http\Response
+     */
+    protected function relations(Request $request, Model $model, $relation)
+    {
+        $related = $model->{$relation}();
+
+        if ($related instanceof BelongsTo) {
+
+            if ((!$relatedItem = $related->first())) {
+                return $response->setStatusCode(404);
+            }
+
+            $payload = new Payload($relatedItem);
+
+            $relatedItems = (new Collection)->push($relatedItem);
+        }
+
+        else { // BelongsToMany or HasMany
+
+            $relatedItems = $this->relatedItems($request, $related);
+
+            $payload = new PayloadCollection($relatedItems);
+
+            $payload->paginator()->setPath(
+                route("{$model->type()}.relations.index", [
+                    'id' => $model->getRouteKey(),
+                    'relation' => $relation
+                ],
+                false
+            ));
+        }
+
+        $this->addResources($request, $payload, $relatedItems);
+
+        return $payload;
+    }
+
+    /**
      * Build a relationship object for the "cru" responses.
      *
      * @access protected
      * @param \JsonApiHttp\Request $request
-     * @param \JsonApiHttp\Model $model
+     * @param \JsonApiHttp\Contracts\Model $model
      * @param string $relation
      * @return \JsonApiHttp\Relationships\Relationship
      */
@@ -139,13 +106,7 @@ class RelationshipsController extends Controller
             $relationship = new BelongsToRelationship;
 
             if (($relatedItem = $related->first())) {
-
-                $relationship->relations()->push(
-                    new Relation([
-                        'id' => $relatedItem->getRouteKey(),
-                        'type' => $relatedItem->type()
-                    ])
-                );
+                $relationship->relations()->push(new Relation($relatedItem));
             }
 
             $relationship->links()->put('self',
@@ -159,7 +120,7 @@ class RelationshipsController extends Controller
 
         else { // BelongsToMany or HasMany
 
-            $relatedItems = $this->relatedItems($request, $related)
+            $relatedItems = $this->relatedItems($request, $related);
 
             $relationship = new HasManyRelationship($relatedItems);
 
@@ -183,26 +144,5 @@ class RelationshipsController extends Controller
         ));
 
         return $relationship;
-    }
-
-    /**
-     * Display a relationship.
-     *
-     * @param \App\Http\Requests\JsonApiRequest $request
-     * @param \App\Model $model
-     * @param string $relation
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Request $request, Model $model, $relation)
-    {
-        $response = new Response;
-
-        $relationship = $this->relationship($request, $model, $relation);
-
-        $response->header('X-Resource-Id', $model->getRouteKey());
-        $response->setContent($relationship);
-        $response->setStatusCode(200);
-
-        return $response;
     }
 }

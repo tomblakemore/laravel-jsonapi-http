@@ -4,7 +4,7 @@ namespace JsonApiHttp;
 
 use Illuminate\Support\Collection;
 
-use JsonApiHttp\Contracts\RelationshipInterface;
+use JsonApiHttp\Contracts\Relationship;
 
 class Relationships extends Collection
 {
@@ -15,7 +15,7 @@ class Relationships extends Collection
      * @param \JsonApiHttp\Contracts\RelationshipInterface $relationship
      * @return $this
      */
-    public function add($name, RelationshipInterface $relationship)
+    public function add($name, Relationship $relationship)
     {
         if (!$this->has($name)) {
             $this->put($name, $relationship);

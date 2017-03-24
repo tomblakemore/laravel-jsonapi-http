@@ -11,6 +11,7 @@ use Illuminate\Support\MessageBag;
 
 use IteratorAggregate;
 
+use JsonApiHttp\Contracts\Model;
 use JsonApiHttp\Exceptions\ControllerException;
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
@@ -30,7 +31,7 @@ class Controller extends BaseController
      * @access protected
      * @param \JsonApiHttp\Request $request
      * @param \JsonApiHttp\Payload $payload
-     * @param \JsonApiHttp\Model $model
+     * @param \JsonApiHttp\Contracts\Model $model
      * @return void
      */
     protected function addResource(
@@ -83,7 +84,7 @@ class Controller extends BaseController
      * @access protected
      * @param \JsonApiHttp\Payload $payload
      * @param \JsonApiHttp\Resource $resource
-     * @param \JsonApiHttp\Model $model
+     * @param \JsonApiHttp\Contracts\Model $model
      * @param array $includes
      * @return void
      */
@@ -172,7 +173,7 @@ class Controller extends BaseController
      * Build and return an error response.
      *
      * @access protected
-     * @param \JsonApiHttp\Model $model
+     * @param \JsonApiHttp\Contracts\Model $model
      * @param bool $rollback
      * @return \Illuminate\Http\Response
      */

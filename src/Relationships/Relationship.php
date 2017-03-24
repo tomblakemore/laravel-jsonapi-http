@@ -2,7 +2,7 @@
 
 namespace JsonApiHttp\Relationships;
 
-use JsonApiHttp\Contracts\RelationshipInterface;
+use JsonApiHttp\Contracts\Relationship as RelationshipInterface;
 use JsonApiHttp\Links;
 use JsonApiHttp\Meta;
 use JsonApiHttp\Relations;

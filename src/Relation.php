@@ -4,6 +4,8 @@ namespace JsonApiHttp;
 
 use Illuminate\Support\Collection;
 
+use JsonApiHttp\Contracts\Model;
+
 class Relation extends Collection
 {
     /**

@@ -5,6 +5,8 @@ namespace JsonApiHttp;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
+use JsonApiHttp\Contracts\Model;
+
 class Payload extends Collection
 {
     /**

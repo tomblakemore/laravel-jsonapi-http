@@ -4,7 +4,7 @@ namespace JsonApiHttp\Relationships;
 
 use Illuminate\Support\Arr;
 
-use JsonApiHttp\Model;
+use JsonApiHttp\Contracts\Model;
 use JsonApiHttp\Relation;
 
 class BelongsTo extends Relationship
