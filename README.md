@@ -1,4 +1,4 @@
-# Laravel JSON:API Package
+# Laravel JSON:API HTTP package
 
 ## Description
 
@@ -25,10 +25,6 @@ have Composer already installed, then install as per the
 Inside your application folder run:
 
     composer require tomblakemore/laravel-jsonapi-http
-
-## Tests
-
-These will be added soon!
 
 ## Setup
 
@@ -494,3 +490,7 @@ attribute of the model. Prefix with `-` sign to sort descending. Multiple
 attributes can be specified, separated by a comma.
 
     GET /patients?sort=-name
+
+## Tests
+
+These will be added soon!
