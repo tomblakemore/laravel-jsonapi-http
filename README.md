@@ -134,7 +134,7 @@ A controller with two actions to fetch people and a person.
         protected $type = 'people';
 
         /**
-         * Return a list of people.
+         * Display a list of people.
          *
          * @param \JsonApiHttp\Request $request
          * @return \Illuminate\Http\Response
@@ -154,7 +154,7 @@ A controller with two actions to fetch people and a person.
         }
 
         /**
-         * Return a person.
+         * Display a person.
          *
          * @param \JsonApiHttp\Request $request
          * @param \App\Person $person
@@ -261,7 +261,7 @@ Create a controller for the relationships.
         protected $type = 'doctors';
 
         /**
-         * Fetch a resource or collection of resources for a relationship.
+         * Display a relation or collection of relations.
          *
          * @param \JsonApiHttp\Request $request
          * @param \App\Doctor $doctor
@@ -270,8 +270,8 @@ Create a controller for the relationships.
          */
         public function index(Request $request, Doctor $doctor, $relation)
         {
-            $payload = $this->relations($request, $doctor, $relation);
-            return response($payload);
+            $relations = $this->relations($request, $doctor, $relation);
+            return response($relations);
         }
 
         /**
@@ -368,7 +368,7 @@ Create a controller for the relationships.
         protected $type = 'patients';
 
         /**
-         * Fetch a resource or collection of resources for a relationship.
+         * Display a relation or collection of relations.
          *
          * @param \JsonApiHttp\Request $request
          * @param \App\Patient $patient
@@ -377,8 +377,8 @@ Create a controller for the relationships.
          */
         public function index(Request $request, Patient $patient, $relation)
         {
-            $payload = $this->relations($request, $patient, $relation);
-            return response($payload);
+            $relations = $this->relations($request, $patient, $relation);
+            return response($relations);
         }
 
         /**
