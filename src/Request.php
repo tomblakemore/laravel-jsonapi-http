@@ -221,7 +221,8 @@ class Request extends HttpRequest
                         // From this point onwards we should only consider 
                         // visible keys as keys we can filter/query on, so if 
                         // this key does not comply we should skip it.
-                        if (!in_array($key, $model->getVisible())) {
+                        if (!empty($model->getVisible())
+                                && !in_array($key, $model->getVisible())) {
                             continue;
                         }
 
@@ -389,24 +390,24 @@ class Request extends HttpRequest
                             continue;
                         }
 
-                        if ($model->hasCast($key, ['date', 'datetime'])) {
+                        elseif ($model->hasCast($key, ['date', 'datetime'])) {
                             $query->{$method}($key, $operator, $value);
                             continue;
                         }
 
-                        if ($model->hasCast($key, ['double', 'float'])) {
+                        elseif ($model->hasCast($key, ['double', 'float'])) {
                             $value = floatval($value);
                             $query->{$method}($key, $operator, $value);
                             continue;
                         }
 
-                        if ($model->hasCast($key, 'integer')) {
+                        elseif ($model->hasCast($key, 'integer')) {
                             $value = intval($value);
                             $query->{$method}($key, $operator, $value);
                             continue;
                         }
 
-                        if ($model->hasCast($key, 'string')) {
+                        else {
                             $value = strtolower($value);
                             $query->{$method}($key, $operator, $value);
                             continue;
@@ -813,16 +814,16 @@ class Request extends HttpRequest
                         $direction = 'desc';
                     }
 
-                    if ($key === 'id' || in_array($key, $model->getVisible())) {
+                    if (!empty($model->getVisible())
+                            && in_array($key, $model->getVisible())) {
+                        $query->orderBy($key, $direction);
+                    } elseif ($key === $model->getRouteKeyName()) {
                         $query->orderBy($key, $direction);
                     }
 
                     $scope = 'scope' . studly_case($key);
 
                     if (method_exists($model, $scope)) {
-                        if ($key === 'popular') {
-                           $direction = $direction === 'asc' ? 'desc' : 'asc';
-                        }
                         $query->{camel_case($key)}($direction);
                     }
                 }

@@ -148,9 +148,9 @@ A controller with two actions to fetch people and a person.
             $people = $request->paginate($query, Person::perPage());
             $people->appends($request->query());
 
-            $payload = $this->payload($request, $people);
+            $resources = $this->resources($request, $people);
 
-            return response($payload);
+            return response($resources);
         }
 
         /**
@@ -162,8 +162,8 @@ A controller with two actions to fetch people and a person.
          */
         public function show(Request $request, Person $person)
         {
-            $payload = $this->payload($request, $person);
-            return response($payload);
+            $resource = $this->resource($request, $person);
+            return response($resource);
         }
     }
 

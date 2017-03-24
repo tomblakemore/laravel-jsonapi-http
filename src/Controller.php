@@ -223,7 +223,7 @@ class Controller extends BaseController
     }
 
     /**
-     * Build a payload object for the "cru" responses.
+     * Build a generic resource/resources payload.
      *
      * @access protected
      * @param \JsonApiHttp\Request $request
@@ -233,33 +233,57 @@ class Controller extends BaseController
     protected function payload(Request $request, $items)
     {
         if (($model = $items) instanceof Model) {
-
-            $payload = new Payload;
-
-            $payload->links()->put('self',
-                route("{$model->type()}.show", [
-                    'id' => $model->getRouteKey()
-                ],
-                false
-            ));
-
-            $items = (new Collection)->push($model);
+            return $this->resource($request, $model);
         }
 
-        else {
+        return $this->resources($request, $items);
+    }
 
-            $payload = new PayloadCollection;
+    /**
+     * Build a resource payload.
+     *
+     * @access protected
+     * @param \JsonApiHttp\Request $request
+     * @param \JsonApiHttp\Contracts\Model $model
+     * @return \JsonApiHttp\Payload
+     */
+    protected function resource(Request $request, Model $model)
+    {
+        $payload = new Payload;
 
-            if ($items instanceof LengthAwarePaginator) {
-                $payload->setPaginator($items);
-            }
+        $this->addResource($request, $payload, $model);
 
-            $payload->paginator()->setPath(
-                route("{$this->type()}.index", [], false
-            ));
+        $payload->links()->put('self',
+            route("{$model->type()}.show", [
+                'id' => $model->getRouteKey()
+            ],
+            false
+        ));
+
+        return $payload;
+    }
+
+    /**
+     * Build a resources payload.
+     *
+     * @access protected
+     * @param \JsonApiHttp\Request $request
+     * @param \Illuminate\Pagination\LengthAwarePaginator $items
+     * @return \JsonApiHttp\Payload
+     */
+    protected function resources(Request $request, LengthAwarePaginator $items)
+    {
+        $payload = new PayloadCollection;
+
+        if ($items instanceof LengthAwarePaginator) {
+            $payload->setPaginator($items);
         }
 
         $this->addResources($request, $payload, $items);
+
+        $payload->paginator()->setPath(
+            route("{$this->type()}.index", [], false
+        ));
 
         return $payload;
     }
