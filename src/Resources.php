@@ -14,10 +14,13 @@ class Resources extends Collection
      */
     public function get($key, $default = null)
     {
-        foreach ($this->items as $item) {
+        if (!$this->offsetExists($key)) {
 
-            if ($item instanceof Resource && $item->id() === $key) {
-                return $item;
+            foreach ($this->items as $item) {
+
+                if ($item instanceof Resource && $item->id() === $key) {
+                    return $item;
+                }
             }
         }
 

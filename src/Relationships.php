@@ -9,22 +9,6 @@ use JsonApiHttp\Contracts\Relationship;
 class Relationships extends Collection
 {
     /**
-     * Add a new relationship item to the collection.
-     *
-     * @param string $name
-     * @param \JsonApiHttp\Contracts\RelationshipInterface $relationship
-     * @return $this
-     */
-    public function add($name, Relationship $relationship)
-    {
-        if (!$this->has($name)) {
-            $this->put($name, $relationship);
-        }
-
-        return $this;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function jsonSerialize()

@@ -99,11 +99,14 @@ class Controller extends BaseController
 
             $related = $model->{snake_case(camel_case($relation))}();
 
-            if ($related instanceof BelongsTo) {
-                $relationship = new BelongsToRelationship;
-            } else {
-                $relationship = new HasManyRelationship;
-                $relationship->hidePagination();
+            if (!($relationship = $resource->relationships()->get($relation))) {
+
+                if ($related instanceof BelongsTo) {
+                    $relationship = new BelongsToRelationship;
+                } else {
+                    $relationship = new HasManyRelationship;
+                    $relationship->hidePagination();
+                }
             }
 
             if (array_key_exists($relation, $includes)) {
@@ -121,18 +124,21 @@ class Controller extends BaseController
 
                 foreach ($items as $item) {
 
-                    $included = new Resource($item);
+                    $id = $item->getRouteKey();
 
-                    $included->links()->put('self', route(
-                        "{$item->type()}.show", [
-                            'id' => $item->getRouteKey()
-                        ],
-                        false
-                    ));
+                    if (!($included = $payload->included()->get($id))) {
 
-                    $payload->included()->push($included);
+                        $included = new Resource($item);
 
-                    $relationship->relations()->push(new Relation($item));
+                        $included->links()->put('self', route(
+                            "{$item->type()}.show", [
+                                'id' => $id
+                            ],
+                            false
+                        ));
+
+                        $payload->included()->push($included);
+                    }
 
                     if (request()->query('include') !== '*') {
 
@@ -143,6 +149,8 @@ class Controller extends BaseController
                             $includes[$relation]
                         );
                     }
+
+                    $relationship->relations()->push(new Relation($item));
                 }
             }
 
@@ -162,7 +170,7 @@ class Controller extends BaseController
                 false
             ));
 
-            $resource->relationships()->add(
+            $resource->relationships()->put(
                 $relation,
                 $relationship
             );

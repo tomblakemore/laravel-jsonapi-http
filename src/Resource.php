@@ -58,7 +58,7 @@ class Resource extends Collection
                     $relationship = new BelongsTo($relationship);
                 }
 
-                $this->relationships()->add($name, $relationship);
+                $this->relationships()->put($name, $relationship);
             }
         }
     }

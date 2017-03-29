@@ -598,7 +598,15 @@ class Request extends HttpRequest
 
             foreach ($include as $nested) {
                 $key = array_shift($nested);
-                $includes[$key] = $this->nestIncludes($nested);
+                $nested = $this->nestIncludes($nested);
+                if (array_key_exists($key, $includes)) {
+                    $includes[$key] = array_merge_recursive(
+                        $includes[$key],
+                        $nested
+                    );
+                } else {
+                    $includes[$key] = $nested;
+                }
             }
         }
 
