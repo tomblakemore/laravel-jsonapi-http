@@ -50,12 +50,10 @@ class VerifyRelationship
                 return response(null, 422);
             }
 
-            if ($relation === 'parent') {
+            if ($relation === 'parent' && $relationship->relation()) {
 
-                $type = $relationship->relation()->type();
-
-                if ($type !== $model->type()) {
-                    return response(null, 422);
+                if ($relationship->relation()->type() !== $model->type()) {
+                    abort(422, 'Invalid parent type'); // Unprocessable Entity
                 }
             }
         }
