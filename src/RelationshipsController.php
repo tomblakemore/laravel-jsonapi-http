@@ -13,6 +13,8 @@ use JsonApiHttp\Exceptions\ControllerException;
 use JsonApiHttp\Relationships\BelongsTo as BelongsToRelationship;
 use JsonApiHttp\Relationships\HasMany as HasManyRelationship;
 
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 class RelationshipsController extends Controller
 {
     /**
@@ -45,13 +47,14 @@ class RelationshipsController extends Controller
     }
 
     /**
-     * Build a relations payload .
+     * Build a relations payload.
      *
      * @access protected
      * @param \JsonApiHttp\Request $request
      * @param \JsonApiHttp\Contracts\Model $model
      * @param string $relation
-     * @return \Illuminate\Http\Response
+     * @return \JsonApiHttp\Payload
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
     protected function relations(Request $request, Model $model, $relation)
     {
@@ -59,8 +62,8 @@ class RelationshipsController extends Controller
 
         if ($related instanceof BelongsTo) {
 
-            if ((!$relatedItem = $related->first())) {
-                return $response->setStatusCode(404);
+            if (!($relatedItem = $related->first())) {
+                throw new NotFoundHttpException('Related item not found.');
             }
 
             $payload = new Payload($relatedItem);
@@ -89,7 +92,7 @@ class RelationshipsController extends Controller
     }
 
     /**
-     * Build a relationship object for the "cru" responses.
+     * Build a relationship object/payload.
      *
      * @access protected
      * @param \JsonApiHttp\Request $request

@@ -281,17 +281,13 @@ class Controller extends BaseController
      */
     protected function resources(Request $request, LengthAwarePaginator $items)
     {
-        $payload = new PayloadCollection;
-
-        if ($items instanceof LengthAwarePaginator) {
-            $payload->setPaginator($items);
-        }
+        $payload = (new PayloadCollection)->setPaginator($items);
 
         $this->addResources($request, $payload, $items);
 
         $payload->paginator()->setPath(
-            route("{$this->type()}.index", [], false
-        ));
+            route("{$this->type()}.index", [], false)
+        );
 
         return $payload;
     }
